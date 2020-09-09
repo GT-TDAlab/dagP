@@ -1,0 +1,8 @@
+Umit V. Catalyurek (umit@gatech.edu)
+M. Yusuf Ozkaya (myozka@gatech.edu)
+Anne Benoit (Anne.Benoit@ens-lyon.fr)
+Julien Herrmann (julien.herrmann@inria.fr)
+Kamer Kaya,(kaya@sabanciuniv.edu)
+Bora Ucar (bora.ucar@ens-lyon.fr)
+
+
