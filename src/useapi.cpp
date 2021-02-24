@@ -18,10 +18,6 @@ int main(int argc, char *argv[])
     if (argc == 3) {
         nbParts = atoi(argv[2]);
     }
-    // arbitrarily set number of nodes (limit) to 30000
-    idxType *parts = (idxType*) calloc(30000, sizeof(idxType));
-    if (parts == NULL)
-        printf("Could not allocate `parts` array.\n");
 
     MLGP_option opt;
     dgraph G;
@@ -47,6 +43,11 @@ int main(int argc, char *argv[])
 
     // read the graph from file with name from command-line arguments
     dagP_read_graph (argv[1], &G, &opt);
+
+    // allocate `parts` array with number of nodes limit = G.nVrtx + 1
+    idxType *parts = (idxType*) calloc((G.nVrtx+1), sizeof(idxType));
+    if (parts == NULL)
+        printf("Could not allocate `parts` array.\n");
 
     // to the partitioning return value is edge cut, part assignments are written over parts array
     ecType x = dagP_partition_from_dgraph(&G, &opt, parts);
