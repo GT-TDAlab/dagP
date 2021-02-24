@@ -17,6 +17,7 @@ int dagP_init_filename(MLGP_option* opt, char* file_name) {
 }
 int dagP_opt_reallocUBLB(MLGP_option* opt, const int nbPart) {
 
+    opt->nbPart = nbPart;
     free(opt->ub);
     free(opt->lb);
     opt->ub = (double*) umalloc((opt->nbPart+1)*sizeof(double), "opt->ub");

@@ -27,13 +27,13 @@ int main(int argc, char *argv[])
 
     dagP_init_filename(&opt, argv[1]); // initialize the input file name and then the  output file name
 
-    printf ("input: %s\nnbPart: %d\n", opt.file_name, opt.nbPart);
-
     // You can reallocate the related variables for a different number of parts later on,
     // instead of providing it on the init_parameters function:
     // reallocate the part upper bound and lower bound arrays for a different number of parts
     // ub and lb arrays by default filled with -1. To set arbitrary values, simply run a for loop
     dagP_opt_reallocUBLB (&opt, nbParts);
+
+    printf ("input: %s\nnbPart: %d\n", opt.file_name, opt.nbPart);
 
     // opt.print = 10; // parameters can then be updated by direct access
     // opt.co_match = 1;
