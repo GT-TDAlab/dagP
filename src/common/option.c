@@ -102,56 +102,55 @@ void reallocUBLB(MLGP_option* opt)
     return;
 }
 
-void printOptions(MLGP_option* opt)
+void printOptions(const MLGP_option* opt, char lineDelim)
 {
-    printf("Options:\n");
-    printf("file_name %s\n", opt->file_name);
-    printf("nbPart %d\n", opt->nbPart);
+    printf("Options:\n", lineDelim);
+    printf("file_name %s%c", opt->file_name, lineDelim);
+    printf("nbPart %d%c", opt->nbPart, lineDelim);
 
-    printf("co_stop_size %d\n", opt->co_stop_size);
-    printf("co_stop_level %d\n", opt->co_stop_level);
-    printf("co_stop_ratio %lf\n", opt->co_stop_ratio);
+    printf("co_stop_size %d%c", opt->co_stop_size, lineDelim);
+    printf("co_stop_level %d%c", opt->co_stop_level, lineDelim);
+    printf("co_stop_ratio %lf%c", opt->co_stop_ratio, lineDelim);
 
-    printf("co_match %d\n", opt->co_match);
-    printf("co_dir %d\n", opt->co_dir);
-    printf("co_match_level %d\n", opt->co_match_level);
-    printf("co_norder %d\n", opt->co_norder);
-    printf("co_norder_reverse %d\n", opt->co_norder_reverse);
-    printf("co_eorder %d\n", opt->co_eorder);
-    printf("co_match_onedegreefirst %d\n", opt->co_match_onedegreefirst);
-    printf("co_match_isolatedmatch %d\n", opt->co_match_isolatedmatch);
-    printf("inipart %d\n", opt->inipart);
-    printf("inipart_nrun %d\n", opt->inipart_nrun);
-    printf("conpar %d\n", opt->conpar);
-    printf("conpar_fix %d\n", opt->conpar_fix);
-    printf("anchored %d\n", opt->anchored);
-    printf("refinement %d\n", opt->refinement);
-    printf("obj %d\n", opt->obj);
-    printf("obj_commvol %d\n", opt->obj_commvol);
-    printf("kernighan %d\n", opt->kernighan);
-    printf("live_cut %d\n", opt->live_cut);
-    printf("live_cut_merge %d\n", opt->live_cut_merge);
-    printf("cache_size %d\n", opt->cache_size);
-    printf("live_traversal %d\n", opt->live_traversal);
-    printf("maxliveset %d\n", opt->maxliveset);
-    printf("use_binary_input %d\n", opt->use_binary_input);
+    printf("co_match %d%c", opt->co_match, lineDelim);
+    printf("co_dir %d%c", opt->co_dir, lineDelim);
+    printf("co_match_level %d%c", opt->co_match_level, lineDelim);
+    printf("co_norder %d%c", opt->co_norder, lineDelim);
+    printf("co_norder_reverse %d%c", opt->co_norder_reverse, lineDelim);
+    printf("co_eorder %d%c", opt->co_eorder, lineDelim);
+    printf("co_match_onedegreefirst %d%c", opt->co_match_onedegreefirst, lineDelim);
+    printf("co_match_isolatedmatch %d%c", opt->co_match_isolatedmatch, lineDelim);
+    printf("inipart %d%c", opt->inipart, lineDelim);
+    printf("inipart_nrun %d%c", opt->inipart_nrun, lineDelim);
+    printf("conpar %d%c", opt->conpar, lineDelim);
+    printf("conpar_fix %d%c", opt->conpar_fix, lineDelim);
+    printf("anchored %d%c", opt->anchored, lineDelim);
+    printf("refinement %d%c", opt->refinement, lineDelim);
+    printf("obj %d%c", opt->obj, lineDelim);
+    // printf("kernighan %d%c", opt->kernighan, lineDelim);
+    printf("live_cut %d%c", opt->live_cut, lineDelim);
+    printf("live_cut_merge %d%c", opt->live_cut_merge, lineDelim);
+    printf("cache_size %d%c", opt->cache_size, lineDelim);
+    printf("live_traversal %d%c", opt->live_traversal, lineDelim);
+    printf("maxliveset %d%c", opt->maxliveset, lineDelim);
+    printf("use_binary_input %d%c", opt->use_binary_input, lineDelim);
 
-    printf("nbProc %d\n", opt->nbProc);
-    printf("ccr %lf\n", opt->ccr);
-    printf("ref_step %d\n", opt->ref_step);
-    printf("undir_alg %d\n", opt->undir_alg);
-    printf("debug %d\n", opt->debug);
-    printf("toggle %d\n", opt->toggle);
-    printf("print %d\n", opt->print);
-    printf("seed %d\n", opt->seed);
-    printf("ratio %lf\n", opt->ratio);
-    printf("runs %d\n", opt->runs);
-    printf("out_file %s\n", opt->out_file);
-    printf("write_parts %d\n", opt->write_parts);
-    printf("ignore_livesize %d\n", opt->ignore_livesize);
-    printf("\n\n\n");
+    printf("nbProc %d%c", opt->nbProc, lineDelim);
+    printf("ccr %lf%c", opt->ccr, lineDelim);
+    printf("ref_step %d%c", opt->ref_step, lineDelim);
+    printf("undir_alg %d%c", opt->undir_alg, lineDelim);
+    printf("debug %d%c", opt->debug, lineDelim);
+    printf("print %d%c", opt->print, lineDelim);
+    printf("seed %d%c", opt->seed, lineDelim);
+    printf("ratio %lf%c", opt->ratio, lineDelim);
+    printf("runs %d%c", opt->runs, lineDelim);
+    printf("out_file %s%c", opt->out_file, lineDelim);
+    printf("write_parts %d%c", opt->write_parts, lineDelim);
+    printf("ignore_livesize %d%c", opt->ignore_livesize, lineDelim);
+    printf("%c\n\n", lineDelim);
     return;
 }
+
 void print_opt(MLGP_option* opt)
 {
     idxType i;

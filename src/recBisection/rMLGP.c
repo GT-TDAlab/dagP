@@ -54,6 +54,8 @@ void run_rMLGP(char* file_name, const MLGP_option opt)
             opt.ub[i] = floor(opt.ub[i])+1;
         }
     }
+    // enable if you wish to see the parameters in the run
+    // printOptions(&opt, ';');
 
     printf("Graph Information:\n\tNb node: %d\n\tNb Edges: %d\n\tMax in-degree: %d\n\tMax out-degree: %d\n\tAv. in-degree: %.2f\n\tAv. out-degree: %.2f\nProblem Information:\n\tNb part: %d\n\tLower Bound[0]: %.1f\n\tUpper Bound[0]: %.1f\n\n", G.nVrtx, G.nEdge, maxindegree, maxoutdegree,aveindegree,aveoutdegree,opt.nbPart, opt.lb[0], opt.ub[0]);
     ecType * edgecut = (ecType *) malloc(sizeof(ecType) * opt.runs);

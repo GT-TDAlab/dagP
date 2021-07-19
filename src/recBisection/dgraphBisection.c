@@ -38,7 +38,7 @@ void fixAcyclicityUp(dgraph* G, idxType *part, idxType inpartidx)
     /*Fix acyclicity of a bisection where inpartidx -> outpartidx by puting every child of outpartidx to outpartidx*/
     idxType* ready;
     idxType to = 1, i;
-    ready = (idxType*) malloc(sizeof(idxType) * (G->nVrtx+1));
+    ready = (idxType*) umalloc(sizeof(idxType) * (G->nVrtx+1), "ready");
     idxType nbready = outputList(G, ready);
     idxType* nboutleft = (idxType *) calloc(G->nVrtx+1, sizeof(idxType));
     for (i = 1; i <= G->nVrtx; i++)
@@ -76,7 +76,7 @@ void fixUndirBisection(ecType* edgecut, coarsen* coars, idxType* part, MLGP_opti
     idxType inpartidx, outpartidx;
     idxType i;
     ecType obj_up, obj_down, new_best_obj = ecType_MAX, best_obj = ecType_MAX;
-    idxType* partsize = (idxType*) malloc((opt.nbPart)*sizeof(idxType));
+    idxType* partsize = (idxType*) umalloc((opt.nbPart)*sizeof(idxType), "partsize");
 
     for (inpartidx = 0 ;inpartidx <=  1; inpartidx++) {
         for (i=1; i<=G->nVrtx; i++) {
@@ -186,16 +186,15 @@ void greedyGraphGrowingEqualTopOrder(dgraph *G, double* ub_pw, idxType *part, ML
     idxType *heapIds, *placedinZero, moved, bestAt, *visitOrder;
     ecType *inMinusOut; /*this will be keyval in the heap*/
     ecType cut, bestCut=ecType_MAX;
-    int isValidBsctn;
 
     vwType *vw = G->vw;
     double pw[2], bestCutBal;
 
-    inMinusOut = (ecType *) malloc(sizeof(ecType) * (nVrtx+1));
-    inDegrees = (idxType*) malloc(sizeof(idxType) * (nVrtx+1));
-    heapIds = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    placedinZero = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    visitOrder = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
+    inMinusOut = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inMinusOut");
+    inDegrees = (idxType*) umalloc(sizeof(idxType) * (nVrtx+1), "inDegrees");
+    heapIds = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "heapIds");
+    placedinZero = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "placedinZero");
+    visitOrder = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "visitOrder");
 
     shuffleTab(1, nVrtx, visitOrder+1);/*this is the randomness */
 
@@ -230,10 +229,11 @@ void greedyGraphGrowingEqualTopOrder(dgraph *G, double* ub_pw, idxType *part, ML
     bestAt = -1;
     moved = 0;
     cut = 0;
-    isValidBsctn = 0;
 
     while (pw[otherPart] <= ub_pw[otherPart] + maxvw && pw[fromPart]>=opt.lb[fromPart] - maxvw)
     {
+        if (heapsz < 1)
+            break;
         maxind = maxHeapExtractKeyvals(heapIds, &heapsz, inMinusOut, vw);
         if (part[maxind] == otherPart)
             u_errexit("greedGraphGrowingEqualTopOrder: already moved there?\n");
@@ -253,18 +253,20 @@ void greedyGraphGrowingEqualTopOrder(dgraph *G, double* ub_pw, idxType *part, ML
             else if (inDegrees[neigh] == -1)
                 u_errexit("wrong index\n");
         }
+        double maxpb = mymax(pw[0]/ub_pw[0], pw[1]/ub_pw[1]);
+        if (bestAt == -1 && maxpb < bestCutBal) {
+            bestCut = cut;
+            bestAt = moved - 1;
+            bestCutBal = maxpb;
+        }
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
-            double maxpw = mymax(pw[0], pw[1]);
-
-            if ((isValidBsctn == 0) || ( isValidBsctn == 1 && (cut < bestCut  ||
-                                                               (cut == bestCut && maxpw < bestCutBal ))))
+            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
-                bestCutBal = maxpw;
+                bestCutBal = maxpb;
             }
-            isValidBsctn = 1;
         }
     }
     if (bestAt == -1)
@@ -297,35 +299,39 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
     idxType *heapIds, *placedinZero, moved, bestAt, *visitOrder;
     ecType *inMinusOut, *inSum; /*this will be keyval in the heap*/
     ecType cut, bestCut=ecType_MAX;
-    int isValidBsctn;
 
     vwType *vw = G->vw;
     double pw[2], bestCutBal;
 
-    inMinusOut = (ecType *) malloc(sizeof(ecType) * (nVrtx+1));
-    inDegrees = (idxType*) malloc(sizeof(idxType) * (nVrtx+1));
-    heapIds = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    placedinZero = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    visitOrder = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    inSum = (ecType *) malloc(sizeof(ecType) * (nVrtx+1));
+    inMinusOut = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inMinusOut");
+    inDegrees = (idxType*) umalloc(sizeof(idxType) * (nVrtx+1), "inDegrees");
+    heapIds = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "heapIds");
+    placedinZero = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "placedinZero");
+    visitOrder = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "visitOrder");
+    inSum = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inSum");
 
     shuffleTab(1, nVrtx, visitOrder+1);/*this is the randomness */
 
     maxvw = -1;
     heapIds[0] = -1;
-    for (vi = 1; vi <= nVrtx; vi++)
-    {
+    for (vi = 1; vi <= nVrtx; vi++) {
         ecType in_out = 0;
         i = visitOrder[vi];
 
+        // assign everyhing to fromPart
         part[i] = fromPart;
 
+        // find maxvw
         if (vw[i] > maxvw) maxvw = vw[i];
 
+        // if this is a source node, add it to heap
         inDegrees[i] = inEnd[i] - inStart[i] + 1;
         if (inDegrees[i] == 0)
             heapIds[++heapsz] = i;
 
+        // find incoming edge weight and the difference between in and out: -gain
+        //      (all outs should be in the succeeding part, all ins should be in the preceding part
+        //      if moving from succeeding part to preceding part)
         for (j=inStart[i]; j <= inEnd[i]; j++)
             in_out += ecIn[j];
 
@@ -337,25 +343,25 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
         inMinusOut[i] = in_out;
     }
 
+    // part weights are assigned wrt the loop above
     pw[otherPart] = 0;
     pw[fromPart] = bestCutBal = G->totvw;
     bestAt = -1;
     moved = 0;
     cut = 0;
-    isValidBsctn = 0;
 
     idxType anchorSource = heapIds[1];
-    idxType* distFromAnchor = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-
+    idxType* distFromAnchor = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "idxType");
     computeDistances(G, anchorSource, distFromAnchor);
     for (i = 1; i <= G->nVrtx; i++)
         distFromAnchor[i] = -distFromAnchor[i];
 
     maxBuildHeapKeyvals(heapIds, heapsz, inSum, distFromAnchor);
-
-    //First Phase where we fill based on in only and distance to anchor
+    //First Phase where we fill based on in only (not gain) and distance to anchor
     while (pw[otherPart] <= 0.9*(ub_pw[otherPart] + maxvw) && pw[fromPart]>=1.1*(opt.lb[fromPart] - maxvw))
     {
+        if (heapsz < 1)
+            break;
         maxind = maxHeapExtractKeyvals(heapIds, &heapsz, inSum, distFromAnchor);
         if (part[maxind] == otherPart)
             u_errexit("greedGraphGrowingTwoPhases: already moved there?\n");
@@ -375,26 +381,35 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
             else if (inDegrees[neigh] == -1)
                 u_errexit("wrong index\n");
         }
-        if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
+        double maxpb = mymax(pw[0]/ub_pw[0], pw[1]/ub_pw[1]);
+        if (bestAt == -1 && maxpb < bestCutBal) {
+            bestCut = cut;
+            bestAt = moved - 1;
+            bestCutBal = maxpb;
+        }
+        // if both are less than their upper bound, this is a valid partition
+        if (pw[otherPart] <= ub_pw[otherPart] + maxvw && pw[fromPart] <= ub_pw[fromPart] + maxvw)
         {
-            double maxpw = mymax(pw[0], pw[1]);
-
-            if ((isValidBsctn == 0) || ( isValidBsctn == 1 && (cut < bestCut  ||
-                                                               (cut == bestCut && maxpw < bestCutBal ))))
+            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
-                bestCutBal = maxpw;
+                bestCutBal = maxpb;
+
             }
-            isValidBsctn = 1;
         }
     }
 
     maxBuildHeapKeyvals(heapIds, heapsz, inMinusOut, vw);
 
+    // printf("second loop\n");
+
     //Second Phase where we fill based on inMinusOut and vertex size
     while (pw[otherPart] <= ub_pw[otherPart] + maxvw && pw[fromPart]>=opt.lb[fromPart] - maxvw)
     {
+        // printf ("pw[fromPart=%d] = %lf , pw[otherPart = %d] = %lf, ub_pw %lf %lf lb %lf %lf maxvw %lf left %lf right %lf\n", fromPart, pw[fromPart], otherPart, pw[otherPart], ub_pw[fromPart], ub_pw[otherPart], opt.lb[fromPart], opt.lb[otherPart], (double) maxvw, 0.9*(ub_pw[otherPart] + maxvw),1.1*(opt.lb[fromPart] - maxvw));
+        if (heapsz < 1)
+            break;
         maxind = maxHeapExtractKeyvals(heapIds, &heapsz, inMinusOut, vw);
         if (part[maxind] == otherPart)
             u_errexit("greedGraphGrowingTwoPhases: already moved there?\n");
@@ -414,18 +429,17 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
             else if (inDegrees[neigh] == -1)
                 u_errexit("wrong index\n");
         }
+        // printf ("cut %lf pw[0] = %lf ub[0] = %lf pw[1] = %lf ub[1] = %lf\t-->\t %lf\n", (double) cut, pw[0], ub_pw[0], pw[1], ub_pw[1], maxpb);
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
-            double maxpw = mymax(pw[0], pw[1]);
-
-            if ((isValidBsctn == 0) || ( isValidBsctn == 1 && (cut < bestCut  ||
-                                                               (cut == bestCut && maxpw < bestCutBal ))))
+            double maxpb = mymax(pw[0]/ub_pw[0], pw[1]/ub_pw[1]);
+            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
-                bestCutBal = maxpw;
+                bestCutBal = maxpb;
+                // printf ("bestCut %lf, bestCutBal %lf\n", (double) bestCut, (double) bestCutBal);
             }
-            isValidBsctn = 1;
         }
     }
 
@@ -460,17 +474,16 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
     idxType *heapIds, *placedinZero, moved, bestAt, *visitOrder;
     ecType *inMinusOut, *inSum; /*this will be keyval in the heap*/
     ecType cut, bestCut=ecType_MAX;
-    int isValidBsctn;
 
     vwType *vw = G->vw;
     double pw[2], bestCutBal;
 
-    inMinusOut = (ecType *) malloc(sizeof(ecType) * (nVrtx+1));
-    inDegrees = (idxType*) malloc(sizeof(idxType) * (nVrtx+1));
-    heapIds = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    placedinZero = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    visitOrder = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
-    inSum = (ecType *) malloc(sizeof(ecType) * (nVrtx+1));
+    inMinusOut = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inMinusOut");
+    inDegrees = (idxType*) umalloc(sizeof(idxType) * (nVrtx+1), "inDegrees");
+    heapIds = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "heapIds");
+    placedinZero = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "placedinZero");
+    visitOrder = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "visitOrder");
+    inSum = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inSum");
 
     shuffleTab(1, nVrtx, visitOrder+1);/*this is the randomness */
 
@@ -505,7 +518,6 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
     bestAt = -1;
     moved = 0;
     cut = 0;
-    isValidBsctn = 0;
 
     idxType anchorSource = heapIds[0];
     idxType* distFromAnchor = (idxType *) malloc(sizeof(idxType) * (nVrtx+1));
@@ -517,6 +529,8 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
 
     while (pw[otherPart] <= ub_pw[otherPart] + maxvw && pw[fromPart]>=opt.lb[fromPart] - maxvw)
     {
+        if (heapsz < 1)
+            break;
         maxind = maxHeapExtractKeyvals(heapIds, &heapsz, inSum, distFromAnchor);
         if (part[maxind] == otherPart)
             u_errexit("greedGraphGrowingIn: already moved there?\n");
@@ -536,18 +550,20 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
             else if (inDegrees[neigh] == -1)
                 u_errexit("wrong index\n");
         }
+        double maxpb = mymax(pw[0]/ub_pw[0], pw[1]/ub_pw[1]);
+        if (bestAt == -1 && maxpb < bestCutBal) {
+            bestCut = cut;
+            bestAt = moved - 1;
+            bestCutBal = maxpb;
+        }
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
-            double maxpw = mymax(pw[0], pw[1]);
-
-            if ((isValidBsctn == 0) || ( isValidBsctn == 1 && (cut < bestCut  ||
-                                                               (cut == bestCut && maxpw < bestCutBal ))))
+            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
-                bestCutBal = maxpw;
+                bestCutBal = maxpb;
             }
-            isValidBsctn = 1;
         }
     }
 

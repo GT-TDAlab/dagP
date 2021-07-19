@@ -197,7 +197,7 @@ typedef struct{
 
 MLGP_option* copyOpt(const MLGP_option opt, int new_nbPart);
 void reallocUBLB(MLGP_option* opt);
-void printOptions(MLGP_option* opt);
+void printOptions(const MLGP_option* opt, char lineDelim);
 void print_opt(MLGP_option* opt);
 void free_opt(MLGP_option* opt);
 
