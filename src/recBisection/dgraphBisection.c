@@ -195,7 +195,7 @@ void greedyGraphGrowingEqualTopOrder(dgraph *G, double* ub_pw, idxType *part, ML
     heapIds = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "heapIds");
     placedinZero = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "placedinZero");
     visitOrder = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "visitOrder");
-
+    int isValidBsctn = 0;
     shuffleTab(1, nVrtx, visitOrder+1);/*this is the randomness */
 
     maxvw = -1;
@@ -261,11 +261,12 @@ void greedyGraphGrowingEqualTopOrder(dgraph *G, double* ub_pw, idxType *part, ML
         }
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
-            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
+            if ( (isValidBsctn == 0) || (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal)))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
                 bestCutBal = maxpb;
+                isValidBsctn = 1;
             }
         }
     }
@@ -295,7 +296,7 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
     idxType *inDegrees;
     idxType heapsz = 0; /*will be from 1 to heapsz*/
     idxType maxind;
-
+    int isValidBsctn = 0;
     idxType *heapIds, *placedinZero, moved, bestAt, *visitOrder;
     ecType *inMinusOut, *inSum; /*this will be keyval in the heap*/
     ecType cut, bestCut=ecType_MAX;
@@ -390,12 +391,12 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
         // if both are less than their upper bound, this is a valid partition
         if (pw[otherPart] <= ub_pw[otherPart] + maxvw && pw[fromPart] <= ub_pw[fromPart] + maxvw)
         {
-            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal))
-            {
+            if ( (isValidBsctn == 0) || (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal)))
+            { // if there is a valid bisection, regular comparison. if no valid bisection exists, then update with this.
                 bestCut = cut;
                 bestAt = moved - 1;
                 bestCutBal = maxpb;
-
+                isValidBsctn = 1;
             }
         }
     }
@@ -433,11 +434,12 @@ void greedyGraphGrowingTwoPhases(dgraph *G, double* ub_pw, idxType *part, MLGP_o
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
             double maxpb = mymax(pw[0]/ub_pw[0], pw[1]/ub_pw[1]);
-            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
-            {
+            if ( (isValidBsctn == 0)|| (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal )) )
+            { // if there is a valid bisection, regular comparison. if no valid bisection exists, then update with this.
                 bestCut = cut;
                 bestAt = moved - 1;
                 bestCutBal = maxpb;
+                isValidBsctn = 1;
                 // printf ("bestCut %lf, bestCutBal %lf\n", (double) bestCut, (double) bestCutBal);
             }
         }
@@ -477,7 +479,7 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
 
     vwType *vw = G->vw;
     double pw[2], bestCutBal;
-
+    int isValidBsctn = 0;
     inMinusOut = (ecType *) umalloc(sizeof(ecType) * (nVrtx+1), "inMinusOut");
     inDegrees = (idxType*) umalloc(sizeof(idxType) * (nVrtx+1), "inDegrees");
     heapIds = (idxType *) umalloc(sizeof(idxType) * (nVrtx+1), "heapIds");
@@ -558,11 +560,12 @@ void greedyGraphGrowingIn(dgraph *G, double* ub_pw, idxType *part, MLGP_option o
         }
         if (pw[otherPart] <= ub_pw[otherPart]+maxvw && pw[fromPart] <= ub_pw[fromPart]+ maxvw) /*if both are less than their upper bound, this is a valid partition*/
         {
-            if (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal ))
+            if ( (isValidBsctn == 0) || (cut < bestCut  || (cut == bestCut && maxpb < bestCutBal)))
             {
                 bestCut = cut;
                 bestAt = moved - 1;
                 bestCutBal = maxpb;
+                isValidBsctn = 1;
             }
         }
     }
