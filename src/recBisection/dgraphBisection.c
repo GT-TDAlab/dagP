@@ -72,30 +72,29 @@ void fixUndirBisection(ecType* edgecut, coarsen* coars, idxType* part, MLGP_opti
     dgraph* G = coars->graph;
     idxType* part_up = (idxType*) calloc(G->nVrtx+1, sizeof(idxType));
     idxType* part_down = (idxType*) calloc(G->nVrtx+1, sizeof(idxType));
-    ecType  ecfix, midup,middown;
+    ecType  ecfix;
     idxType inpartidx, outpartidx;
     idxType i;
     ecType obj_up, obj_down, new_best_obj = ecType_MAX, best_obj = ecType_MAX;
-    idxType* partsize = (idxType*) umalloc((opt.nbPart)*sizeof(idxType), "partsize");
+    vwType* partsize = (vwType*) umalloc((opt.nbPart)*sizeof(vwType), "partsize");
 
     for (inpartidx = 0 ;inpartidx <=  1; inpartidx++) {
-        for (i=1; i<=G->nVrtx; i++) {
-            part_up[i] = part[i];
-            part_down[i] = part[i];
-        }
+        memcpy(part_up, part, sizeof(idxType)*(G->nVrtx+1));
+        memcpy(part_down, part, sizeof(idxType)*(G->nVrtx+1));
+
         outpartidx = 1-inpartidx;
         idxType toporderpart[2];
 
         toporderpart[0] = inpartidx;
         toporderpart[1] = outpartidx;
 
-        middown  = ecType_MAX;
-        midup  = ecType_MAX;
+        // middown  = ecType_MAX;
+        // midup  = ecType_MAX;
         //We try fixAcyclicityBottom with the order inpartidx -> outpartidx
         fixAcyclicityBottom(G, part_down, toporderpart[1]);
 
         obj_down = edgeCut(G, part_down);
-        middown = obj_down;
+        // middown = obj_down;
         int oldRef = opt.refinement;
         opt.refinement = REF_bFM_MAXW;
         refinementPostOrder_Max(G, toporderpart, opt.lb, opt.ub, part_down, &obj_down, opt, partsize);
@@ -107,15 +106,13 @@ void fixUndirBisection(ecType* edgecut, coarsen* coars, idxType* part, MLGP_opti
         //We try fixAcyclicityUp with the order inpartidx -> outpartidx
         fixAcyclicityUp(G, part_up, toporderpart[0]);
         obj_up = edgeCut(G, part_up);
-        midup = obj_up;
+        // midup = obj_up;
         oldRef = opt.refinement;
         opt.refinement = REF_bFM_MAXW;
-
         refinementPostOrder_Max(G, toporderpart, opt.lb, opt.ub, part_up, &obj_up, opt, partsize);
-
         opt.refinement  = oldRef;
         recBisRefinementStep(opt, info->coars_depth, G, part_up, coars->nbpart, info);
-        obj_down = edgeCut(G, part_up);
+        obj_up = edgeCut(G, part_up);
         if ( !(partsize[0] <= opt.ub[0] + G->maxVW && partsize[1] <= opt.ub[1] + G->maxVW))
             obj_up = ecType_MAX;
 
@@ -126,18 +123,12 @@ void fixUndirBisection(ecType* edgecut, coarsen* coars, idxType* part, MLGP_opti
 
         if (new_best_obj >= best_obj)
             continue;
-        if (obj_down < best_obj && obj_down < obj_up)
-            ecfix = middown;
-        if (obj_up < best_obj && obj_up < obj_down)
-            ecfix = midup;
 
         if (obj_up > obj_down)
-            for (i=1; i<=G->nVrtx; i++)
-                part[i] = part_down[i];
+            memcpy(part, part_down, sizeof(idxType)*(G->nVrtx+1));
         else{
             if (obj_up < ecType_MAX)
-                for (i=1; i<=G->nVrtx; i++)
-                    part[i] = part_up[i];
+                memcpy(part, part_up, sizeof(idxType)*(G->nVrtx+1));
             else
                 u_errexit("undirAcyclicBisection: This should not have happened\n");
         }
